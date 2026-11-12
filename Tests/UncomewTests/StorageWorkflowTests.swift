@@ -61,7 +61,10 @@ struct StorageWorkflowTests {
         check((nodes[sparse.standardizedFileURL.path]?.logicalBytes ?? 0) > (nodes[sparse.standardizedFileURL.path]?.allocatedBytes ?? Int64.max), "Sparse logical/allocated sizes distinguished")
         check(nodes.values.filter { $0.note?.contains("하드 링크") == true }.count == 1, "Hard link is not counted twice")
         let plistSize = try Data(contentsOf: app.appendingPathComponent("Contents/Info.plist")).count
-        check(nodes[root.standardizedFileURL.path]?.logicalBytes == 64 * 1024 * 1024 + 1024 * 1024 + 3 + Int64(plistSize) + 4096 + nodes[link.standardizedFileURL.path]!.logicalBytes!, "Non-overlapping logical aggregate")
+        let fixedFixtureBytes: Int64 = 64 * 1024 * 1024 + 1024 * 1024 + 3 + 4096
+        let linkBytes: Int64 = nodes[link.standardizedFileURL.path]!.logicalBytes!
+        let expectedLogicalBytes: Int64 = fixedFixtureBytes + Int64(plistSize) + linkBytes
+        check(nodes[root.standardizedFileURL.path]?.logicalBytes == expectedLogicalBytes, "Non-overlapping logical aggregate")
         check(StorageScan.normalizedRoots([root.path, nested.path, root.path]) == [root.standardizedFileURL.path], "Overlapping roots removed")
         check(StorageScan.normalizedRoots(["/a", "/ab"]) == ["/a", "/ab"], "Root path boundaries")
         let rankingFixture: [StorageNode] = (0..<12_000).map { index in
