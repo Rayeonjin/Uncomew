@@ -246,10 +246,12 @@ final class AppUninstaller: ObservableObject {
             if let path = selectedAppURL?.path, result.0.contains(path) {
                 appCandidate = nil; includeApplication = false; applications.removeAll { $0.url.path == path }
             }
-            statusMessage = "휴지통 이동 \(result.0.count)개 · 실패 \(result.1.count)개\n" +
-                result.0.map { "이동: \($0)" }.joined(separator: "\n") + "\n" + result.1.joined(separator: "\n") +
-                "\n앱 내 복원 가능 \(result.2.count)개. 복원 항목이 없으면 Finder의 휴지통에서 확인하세요." +
-                "\n휴지통을 비우기 전까지 공간을 차지할 수 있습니다. 요약에서 남은 공간을 다시 확인하세요."
+            var messageLines = ["휴지통 이동 \(result.0.count)개 · 실패 \(result.1.count)개"]
+            messageLines.append(contentsOf: result.0.map { "이동: \($0)" })
+            messageLines.append(contentsOf: result.1)
+            messageLines.append("앱 내 복원 가능 \(result.2.count)개. 복원 항목이 없으면 Finder의 휴지통에서 확인하세요.")
+            messageLines.append("휴지통을 비우기 전까지 공간을 차지할 수 있습니다. 요약에서 남은 공간을 다시 확인하세요.")
+            statusMessage = messageLines.joined(separator: "\n")
         }
     }
 }
