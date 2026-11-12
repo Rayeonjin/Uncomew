@@ -1,1 +1,5 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
+contact_links:
+  - name: 문의·버그 제보 · Telegram
+    url: https://t.me/Rayeonjin
+    about: Uncomew 관련 문의라고 적고 앱 버전·macOS·칩 종류·문제 상황을 알려주세요. 개인 경로와 파일명은 가려주세요.

@@ -98,7 +98,7 @@ bash rollback.sh
 
 ## 문의와 버그 제보
 
-[GitHub Issues](https://github.com/Rayeonjin/Uncomew/issues)에서 **오류 제보** 또는 **사용성 피드백**을 선택해 주세요.
+문의·버그 제보·사용성 피드백은 [Telegram · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. Catoshi와 같은 채널을 사용하므로 **Uncomew 관련 문의**라고 적어주시면 도움이 됩니다.
 
 앱 버전, macOS와 칩 종류, 막힌 단계와 오류 메시지를 함께 알려주시면 도움이 됩니다. 화면이나 로그를 올릴 때는 개인 경로와 파일명을 가려주세요. “다음에 무엇을 눌러야 할지 모르겠다” 같은 사용 경험도 환영합니다.
 

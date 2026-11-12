@@ -77,7 +77,7 @@ Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`,
 - **잠금:** `.uncomew-install.lock`은 중복 설치/복구를 막습니다. 다른 작업이 진행 중이면 기다리세요.
 - **강제 종료·전원 차단:** SIGKILL 또는 전원 차단은 자동 복구를 보장하지 않습니다. 잠금이나 `.uncomew-stage.*` 폴더가 남으면 임의로 지우지 마세요. 먼저 실행 중인 설치가 없는지 확인하고, `Uncomew.app`, `Uncomew.previous.app`, stage의 `current.app`·`older.app` 상태를 보존한 채 복구해야 합니다. 자동 복구에 실패한 경우에도 stage 경로를 출력하고 보존합니다.
 
-문제 제보에는 macOS 버전, 칩 종류, Uncomew 버전과 실패 단계/메시지를 포함하세요. 개인 경로와 파일명은 공유 전에 가리세요.
+문제 제보는 [Telegram · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. Uncomew 관련 문의임을 적고 macOS 버전, 칩 종류, Uncomew 버전과 실패 단계/메시지를 포함하세요. 개인 경로와 파일명은 공유 전에 가리세요.
 
 ## 개발용 빌드·검증
 

@@ -4,7 +4,7 @@
 
 ## 제보
 
-[GitHub Issues](https://github.com/Rayeonjin/Uncomew/issues)의 오류 제보/사용성 피드백 양식을 사용하세요. macOS·칩·앱 버전, 기대한 결과와 실제 결과를 적어주세요. 공개 이슈에 개인 경로, 파일명, 앱 목록, 토큰을 올리지 마세요.
+[Telegram · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. **Uncomew**라고 적고 macOS·칩·앱 버전, 기대한 결과와 실제 결과를 함께 알려주세요. 개인 경로, 파일명, 앱 목록, 토큰은 공유 전에 가려주세요. 코드 수정 제안은 GitHub Pull Request로 받을 수 있습니다.
 
 ## 개발
 
