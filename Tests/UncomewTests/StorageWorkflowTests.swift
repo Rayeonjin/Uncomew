@@ -61,7 +61,7 @@ struct StorageWorkflowTests {
         check((nodes[sparse.standardizedFileURL.path]?.logicalBytes ?? 0) > (nodes[sparse.standardizedFileURL.path]?.allocatedBytes ?? Int64.max), "Sparse logical/allocated sizes distinguished")
         check(nodes.values.filter { $0.note?.contains("하드 링크") == true }.count == 1, "Hard link is not counted twice")
         let plistSize = try Data(contentsOf: app.appendingPathComponent("Contents/Info.plist")).count
-        let fixedFixtureBytes: Int64 = 64 * 1024 * 1024 + 1024 * 1024 + 3 + 4096
+        let fixedFixtureBytes: Int64 = 68_161_539 // 64 MiB sparse + 1 MiB regular + 3 hidden + 4096 executable
         let linkBytes: Int64 = nodes[link.standardizedFileURL.path]!.logicalBytes!
         let expectedLogicalBytes: Int64 = fixedFixtureBytes + Int64(plistSize) + linkBytes
         check(nodes[root.standardizedFileURL.path]?.logicalBytes == expectedLogicalBytes, "Non-overlapping logical aggregate")
