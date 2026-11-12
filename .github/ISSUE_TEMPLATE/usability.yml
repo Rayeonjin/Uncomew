@@ -1,0 +1,22 @@
+name: 사용성 피드백
+description: 저장 공간 정리 도중 막히거나 헷갈린 부분을 알려주세요.
+title: "[UX] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 하려고 했던 일
+      placeholder: 다운로드 폴더에서 큰 설치 파일을 찾아 정리하려 했습니다.
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: 막힌 화면과 기대했던 다음 행동
+      description: 눌렀던 버튼, 이해하기 어려웠던 문구, 반복한 작업을 알려주세요. 개인 경로와 파일명은 가려주세요.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 앱 버전 / macOS 버전 / 칩 종류

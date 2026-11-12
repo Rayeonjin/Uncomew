@@ -1,0 +1,29 @@
+.DS_Store
+.build/
+.swiftpm/
+dist/
+*.app
+*.dmg
+*.log
+.env
+.env.*
+private/
+releases/
+archive/
+
+# Local editor / agent state and signing material
+.codex/
+.agents/
+.idea/
+.vscode/
+*.pem
+*.p12
+*.key
+__pycache__/
+
+# Local planning and work history (not public source)
+PROJECT_STATUS.md
+docs/PRODUCT_PLAN_2026.md
+docs/PRODUCT_DIRECTION.md
+docs/USER_JOURNEY_REVIEW.md
+docs/RELEASE_ALPHA.md

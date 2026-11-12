@@ -1,0 +1,52 @@
+name: 오류 제보
+description: 빌드·분석·앱 관리 중 발생한 문제를 알려주세요.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "공개 이슈입니다. 개인 파일명·사용자명·전체 경로·앱 목록·인증 정보는 가려주세요. 삭제/복원 문제를 재현하려고 중요한 파일을 다시 이동하지 마세요."
+  - type: input
+    id: version
+    attributes:
+      label: Uncomew 버전 또는 소스 태그
+      placeholder: v0.2.0-alpha.1
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: macOS 버전과 칩 종류
+      placeholder: macOS 버전 / Apple Silicon 또는 Intel
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 발생 단계
+      options:
+        - 빌드 또는 설치
+        - 저장 공간 분석
+        - 결과 탐색 또는 필터
+        - 앱 검토 또는 휴지통 이동
+        - 복원
+        - 기타
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 절차와 기대한 동작
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 동작과 오류 메시지
+      description: 개인정보를 지운 텍스트나 화면만 첨부하세요. 빌드 문제라면 xcrun swift --version 결과도 알려주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 분석 조건 (해당하는 경우)
+      description: 전체/선택 폴더, 로컬/외장/클라우드, 전체 디스크 접근 허용 여부를 알려주세요. 개인 경로는 필요하지 않습니다.

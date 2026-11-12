@@ -1,0 +1,22 @@
+name: Verify source
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sw_vers
+          xcrun swift --version
+      - name: Build and validate app
+        run: bash build-app.sh
+      - name: Read-only and fixture regression tests
+        run: |
+          bash test-core.sh
+          bash test-workflow.sh
+          bash test-flow.sh
+          bash test-journeys.sh
+          bash test-improvements.sh
