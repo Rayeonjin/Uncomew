@@ -34,7 +34,7 @@ macOS 13 이상에서 소스를 받아 직접 빌드해 사용합니다. 아직 
 
 [GitHub Releases](https://github.com/Rayeonjin/Uncomew/releases)에서 **v0.2.0-alpha.1**의 **Source code (zip)**을 받아 압축을 풉니다. `Code → Download ZIP`에는 개발 중인 변경이 들어갈 수 있으니 릴리스 ZIP을 권장합니다.
 
-새 아이콘과 정리된 폴더 구조는 현재 **main**에 있습니다. 이 변경을 사용하려면 `Code → Download ZIP`으로 받으세요.
+새 아이콘과 정리된 폴더 구조, `/Applications` 기본 설치는 현재 **main**에 있습니다. 이 변경을 사용하려면 `Code → Download ZIP`으로 받으세요.
 
 ### 2. 빌드 도구 확인하기
 
@@ -56,10 +56,12 @@ xcode-select --install
 
 ```bash
 bash setup.sh
-open "$HOME/Applications/Uncomew.app"
+open "/Applications/Uncomew.app"
 ```
 
-빌드와 검증을 마치면 `~/Applications/Uncomew.app`에 설치됩니다. `sudo`는 사용하지 않습니다. 설치 스크립트가 앱을 자동 실행하지 않으므로 두 번째 명령으로 열어주세요.
+현재 main은 빌드와 검증을 마치면 `/Applications/Uncomew.app`에 설치됩니다. Finder의 **응용 프로그램**에서 찾을 수 있습니다. `sudo`는 사용하지 않습니다. 설치 스크립트가 앱을 자동 실행하지 않으므로 두 번째 명령으로 열어주세요.
+
+기존 v0.2.0-alpha.1 ZIP은 `~/Applications`에 설치합니다. 그 소스로 공용 응용 프로그램 폴더에 설치하려면 `UNCOMEW_APPLICATIONS_DIR=/Applications bash setup.sh`를 사용하세요.
 
 [자세한 설치·문제 해결 안내](docs/BUILDING.md)
 
@@ -76,7 +78,7 @@ open "$HOME/Applications/Uncomew.app"
 
 ## 업데이트와 복구
 
-새 릴리스 소스를 별도 폴더에 풀고 Uncomew를 종료한 뒤 `bash setup.sh`를 실행합니다. 직전 앱은 `~/Applications/Uncomew.previous.app`에 보관합니다. 업데이트 확인·설치는 수동입니다.
+새 릴리스 소스를 별도 폴더에 풀고 Uncomew를 종료한 뒤 `bash setup.sh`를 실행합니다. 직전 앱은 `/Applications/Uncomew.previous.app`에 보관합니다. 업데이트 확인·설치는 수동입니다.
 
 새 버전에 문제가 생기면 Uncomew를 종료하고 소스 폴더에서 실행하세요.
 
@@ -84,7 +86,7 @@ open "$HOME/Applications/Uncomew.app"
 bash scripts/rollback.sh
 ```
 
-기존 v0.2.0-alpha.1 릴리스 ZIP에서는 `bash rollback.sh`를 사용합니다.
+기존 v0.2.0-alpha.1 릴리스 ZIP에서는 `bash rollback.sh`를 사용합니다. 공용 응용 프로그램 폴더에 설치했다면 앞에 `UNCOMEW_APPLICATIONS_DIR=/Applications`를 붙여주세요.
 
 앱 버전만 되돌리며 사용자 파일·설정을 과거 시점으로 바꾸지는 않습니다. [업데이트·복구 안내](docs/BUILDING.md)
 

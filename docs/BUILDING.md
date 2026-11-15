@@ -51,21 +51,21 @@ ls setup.sh
 bash setup.sh
 ```
 
-스크립트가 빌드·로컬 서명·앱 검증을 마치면 `~/Applications/Uncomew.app`에 설치합니다. 처음 빌드는 시간이 걸릴 수 있으니 완료 안내를 기다려 주세요.
+스크립트가 빌드·로컬 서명·앱 검증을 마치면 `/Applications/Uncomew.app`에 설치합니다. Finder의 **응용 프로그램**에서 찾을 수 있습니다. 처음 빌드는 시간이 걸릴 수 있으니 완료 안내를 기다려 주세요.
 
 ## 5. 앱 열기
 
 설치 후 앱은 자동으로 열리지 않습니다. 다음 명령으로 실행하세요.
 
 ```bash
-open "$HOME/Applications/Uncomew.app"
+open "/Applications/Uncomew.app"
 ```
 
 처음에는 **정리할 곳 찾기**를 누르거나 필요한 폴더만 직접 선택해 보세요. 일반 파일 분석은 읽기 전용입니다.
 
 개인정보 보호 영역을 읽지 못한 경우 **시스템 설정 → 개인정보 보호 및 보안 → 전체 디스크 접근 권한**에서 설치된 Uncomew를 추가하고 앱을 완전히 종료한 뒤 다시 실행할 수 있습니다. 권한을 줘도 일부 시스템 경로는 읽을 수 없으며, 업데이트 후 권한을 다시 확인해야 할 수 있습니다.
 
-평소에는 `~/Applications/Uncomew.app`을 실행하세요. 개발 폴더의 `dist/Uncomew.app`은 별도 복사본입니다. 기존 DiskScope 앱은 자동으로 지우거나 교체하지 않습니다.
+평소에는 `/Applications/Uncomew.app`을 실행하세요. 개발 폴더의 `dist/Uncomew.app`은 별도 복사본입니다. 기존 DiskScope 앱은 자동으로 지우거나 교체하지 않습니다.
 
 ## 업데이트
 
@@ -75,7 +75,7 @@ open "$HOME/Applications/Uncomew.app"
 bash setup.sh
 ```
 
-현재 설치된 앱을 `~/Applications/Uncomew.previous.app`으로 보관한 뒤 새 앱을 사용합니다. 이전 앱은 한 개만 유지하며, 그보다 오래된 백업은 정상 업데이트 완료 후 정리합니다. 같은 버전을 재설치해도 백업은 직전에 설치되어 있던 앱으로 바뀝니다.
+현재 설치된 앱을 `/Applications/Uncomew.previous.app`으로 보관한 뒤 새 앱을 사용합니다. 이전 앱은 한 개만 유지하며, 그보다 오래된 백업은 정상 업데이트 완료 후 정리합니다. 같은 버전을 재설치해도 백업은 직전에 설치되어 있던 앱으로 바뀝니다.
 
 업데이트를 자동으로 확인하거나 설치하지 않습니다. GitHub Releases에서 새 버전을 확인하세요. 설정과 사용자 파일은 설치 스크립트가 변경하지 않습니다.
 
@@ -85,7 +85,7 @@ Uncomew를 종료하고 소스 폴더에서 실행합니다.
 
 ```bash
 bash scripts/rollback.sh
-open "$HOME/Applications/Uncomew.app"
+open "/Applications/Uncomew.app"
 ```
 
 현재 앱과 이전 앱이 서로 바뀝니다. 복구에는 새 빌드가 필요하지 않습니다. 이전 앱이 없으면 과거 릴리스 소스를 내려받아 `bash setup.sh`로 설치하세요. 앱 버전 복구는 사용자 데이터나 설정을 과거 시점으로 되돌리는 기능이 아닙니다.
@@ -153,3 +153,11 @@ UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash scripts/test-improvements.sh
 ### 소스 폴더 구조 변경
 
 현재 main에서는 개발·복구 스크립트를 `scripts/`로 모았습니다. 기존 v0.2.0-alpha.1 릴리스 ZIP을 사용한다면 `build-app.sh`, `run-app.sh`, `rollback.sh`, `test-*.sh`는 `scripts/` 없이 실행하세요. 설치 명령 `bash setup.sh`는 동일합니다.
+
+### 응용 프로그램 폴더
+
+현재 main의 기본 설치 위치는 `/Applications/Uncomew.app`입니다. 이 폴더에 쓰기 권한이 없는 계정에서는 관리자 계정으로 설치하세요. 빌드 전체를 `sudo`로 실행하지 마세요.
+
+기존 v0.2.0-alpha.1 소스의 기본 위치는 `~/Applications`입니다. 이전 소스를 사용하면서 공용 응용 프로그램 폴더에 설치하려면 `UNCOMEW_APPLICATIONS_DIR=/Applications bash setup.sh`를 실행하세요. 그 소스에서 복구할 때도 같은 환경 변수를 지정해야 합니다.
+
+이전에 `~/Applications`에 설치한 복사본은 자동으로 옮기거나 삭제하지 않습니다. 새 설치를 확인한 뒤 이전 복사본이 필요 없으면 Finder에서 정리하세요. 전체 디스크 접근 권한도 새 설치 경로를 기준으로 확인하세요.
