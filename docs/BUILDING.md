@@ -5,40 +5,67 @@ Uncomew는 소스를 내려받아 자신의 Mac에서 빌드하는 방식으로 
 ## 준비
 
 - macOS 13 이상
-- Swift 5.9 이상을 포함한 Apple Command Line Tools (전체 Xcode와 유료 개발자 계정 불필요)
-- 현재 Mac의 아키텍처에 맞춰 빌드: Apple Silicon 또는 Intel. 실제 검증 환경은 [테스트 안내](TESTING.md)를 참고하세요.
+- Swift 5.9 이상을 포함한 Apple Command Line Tools
+- 소스를 내려받고 개발 도구를 설치할 인터넷 연결과 빌드에 필요한 여유 공간
 
-터미널에서 개발 도구를 설치합니다.
+**전체 Xcode 앱과 유료 개발자 계정은 필요 없습니다.** 지금 사용하는 Mac의 칩에 맞춰 빌드합니다. 실제로 확인한 환경은 [테스트 안내](TESTING.md)를 참고하세요.
 
-```bash
-xcode-select --install
-```
+## 1. 릴리스 소스 받기
 
-설치가 끝나면 확인합니다.
+[GitHub Releases](https://github.com/Rayeonjin/Uncomew/releases)에서 설치할 버전의 **Source code (zip)**을 받아 압축을 풉니다. `Code → Download ZIP`에는 개발 중인 변경이 들어갈 수 있으므로 릴리스 ZIP을 권장합니다.
+
+현재 공개 버전은 **v0.2.0-alpha.1**입니다. 안정판이 아닌 초기 공개 테스트 버전이므로, 릴리스의 알려진 문제도 확인해 주세요.
+
+## 2. 터미널과 빌드 도구 준비하기
+
+`⌘ Command + Space`를 누르고 **터미널**을 검색해 실행합니다.
 
 ```bash
 xcrun swift --version
 ```
 
-## 설치
+Swift 5.9 이상이 나오면 다음 단계로 넘어가세요. 도구가 없다는 오류가 나오면 아래 명령으로 Command Line Tools를 설치합니다.
 
-[GitHub Releases](https://github.com/Rayeonjin/Uncomew/releases)에서 원하는 버전의 **Source code ZIP**을 받습니다. 기본 브랜치 ZIP에는 개발 중 변경이 포함될 수 있습니다. 압축을 풀고 터미널에 `cd `를 입력한 뒤 압축을 푼 폴더를 끌어다 놓고 Enter를 누릅니다.
+```bash
+xcode-select --install
+```
 
-실행 중인 Uncomew를 종료하고 다음 명령을 실행합니다. `sudo`는 사용하지 않습니다.
+명령 이름에 `xcode`가 들어가지만 전체 Xcode 앱을 설치하는 명령은 아닙니다. 설치가 끝나면 `xcrun swift --version`을 다시 확인하세요.
+
+## 3. 소스 폴더로 이동하기
+
+터미널에 `cd `를 입력합니다. 뒤에 공백 하나를 넣고, Finder에서 압축을 푼 폴더를 터미널 창으로 끌어다 놓은 뒤 Enter를 누릅니다.
+
+```bash
+pwd
+ls setup.sh
+```
+
+폴더 경로와 `setup.sh`가 표시되면 설치할 위치로 제대로 이동한 것입니다.
+
+## 4. 빌드하고 설치하기
+
+실행 중인 Uncomew를 종료한 뒤 실행하세요. `sudo`는 사용하지 않습니다.
 
 ```bash
 bash setup.sh
 ```
 
-스크립트는 빌드·로컬 서명을 수행하고 앱 식별자, 실행 파일, 아키텍처, 서명을 검증합니다. 검증된 앱을 `~/Applications/Uncomew.app`에 설치합니다. 관리자 권한은 요구하지 않습니다. 앱은 자동으로 실행되지 않습니다.
+스크립트가 빌드·로컬 서명·앱 검증을 마치면 `~/Applications/Uncomew.app`에 설치합니다. 처음 빌드는 시간이 걸릴 수 있으니 완료 안내를 기다려 주세요.
+
+## 5. 앱 열기
+
+설치 후 앱은 자동으로 열리지 않습니다. 다음 명령으로 실행하세요.
 
 ```bash
 open "$HOME/Applications/Uncomew.app"
 ```
 
-스캔에서 개인정보 보호 영역의 접근 거부가 보고되면 **시스템 설정 → 개인정보 보호 및 보안 → 전체 디스크 접근 권한**에 설치된 Uncomew를 추가하고 앱을 완전히 종료한 뒤 다시 실행하세요. 권한을 줘도 일부 macOS 보호 경로는 읽을 수 없습니다. 직접 빌드한 앱은 업데이트 후 권한을 다시 확인해야 할 수 있습니다.
+처음에는 **정리할 곳 찾기**를 누르거나 필요한 폴더만 직접 선택해 보세요. 일반 파일 분석은 읽기 전용입니다.
 
-기존 DiskScope 앱은 설치 대상이 아니며 자동으로 삭제하거나 교체하지 않습니다. 설치된 앱과 `dist/Uncomew.app`을 혼동하지 않도록 일반 사용은 위의 설치 경로에서 실행하세요.
+개인정보 보호 영역을 읽지 못한 경우 **시스템 설정 → 개인정보 보호 및 보안 → 전체 디스크 접근 권한**에서 설치된 Uncomew를 추가하고 앱을 완전히 종료한 뒤 다시 실행할 수 있습니다. 권한을 줘도 일부 시스템 경로는 읽을 수 없으며, 업데이트 후 권한을 다시 확인해야 할 수 있습니다.
+
+일반 사용은 위 설치 경로의 앱으로 해주세요. 개발 폴더의 `dist/Uncomew.app`이나 과거 DiskScope 앱과 혼동하지 않도록 확인하세요. 기존 DiskScope 앱은 자동으로 지우거나 교체하지 않습니다.
 
 ## 업데이트
 
@@ -67,7 +94,7 @@ open "$HOME/Applications/Uncomew.app"
 
 2026-11-12 Apple Silicon에서 새 임시 소스 폴더의 `bash build-app.sh`가 별도 SDK 지정 없이 성공했습니다. 다른 Mac 및 모든 macOS 버전을 검증한 결과는 아닙니다.
 
-Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`, `xcrun --show-sdk-path`, `xcode-select -p`로 현재 도구를 확인하세요. 설치된 macOS에 맞는 Apple 개발 도구로 업데이트하거나 설치 상태를 점검하세요. 과거 개발 환경에서는 SDK/컴파일러 불일치가 있었으므로 특정 SDK 경로를 모든 사용자에게 강제로 지정하지 않습니다.
+Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`, `xcrun --show-sdk-path`, `xcode-select -p`로 현재 도구를 확인하세요. 설치된 macOS에 맞는 Apple 개발 도구로 업데이트하거나 설치 상태를 점검하세요. 과거 개발 환경에서는 개발 도구와 시스템 개발 키트(SDK)의 버전 불일치가 있었으므로 특정 SDK 경로를 모든 사용자에게 강제로 지정하지 않습니다.
 
 ## 설치 중 오류
 
@@ -77,7 +104,7 @@ Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`,
 - **잠금:** `.uncomew-install.lock`은 중복 설치/복구를 막습니다. 다른 작업이 진행 중이면 기다리세요.
 - **강제 종료·전원 차단:** SIGKILL 또는 전원 차단은 자동 복구를 보장하지 않습니다. 잠금이나 `.uncomew-stage.*` 폴더가 남으면 임의로 지우지 마세요. 먼저 실행 중인 설치가 없는지 확인하고, `Uncomew.app`, `Uncomew.previous.app`, stage의 `current.app`·`older.app` 상태를 보존한 채 복구해야 합니다. 자동 복구에 실패한 경우에도 stage 경로를 출력하고 보존합니다.
 
-문제 제보는 [Telegram · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. Uncomew 관련 문의임을 적고 macOS 버전, 칩 종류, Uncomew 버전과 실패 단계/메시지를 포함하세요. 개인 경로와 파일명은 공유 전에 가리세요.
+문제 제보는 [텔레그램 · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. Uncomew 관련 문의임을 적고 macOS 버전, 칩 종류, Uncomew 버전과 실패 단계/메시지를 포함하세요. 개인 경로와 파일명은 공유 전에 가리세요.
 
 ## 개발용 빌드·검증
 
@@ -109,11 +136,11 @@ UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash setup.sh
 UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash rollback.sh
 ```
 
-이 검증은 앱 번들 무결성과 설치 절차에 관한 것입니다. 실제 GUI 실행·전체 디스크 스캔 성공을 보장하는 검사는 아닙니다.
+이 검증은 앱 번들 무결성과 설치 절차에 관한 것입니다. 실제 실제 화면 실행·전체 디스크 스캔 성공을 보장하는 검사는 아닙니다.
 
 ### 임시 경로에서 개발 테스트하기
 
-일반 사용자는 Downloads 등 일반 폴더에 소스를 풀어 빌드하세요. 개발 검사를 `/tmp`·`/var` 계열에서 실행하면 macOS 경로 별칭/심볼릭 링크 때문에 제거 안전 검사가 fixture를 거부할 수 있습니다. 안전 검사를 완화하지 말고, 심볼릭 링크를 포함하지 않는 개발 폴더를 fixture 위치로 지정하세요. 지정 폴더의 `.build` 아래에 UUID 이름의 일회용 데이터만 만들고 정리합니다.
+일반 사용자는 Downloads 등 일반 폴더에 소스를 풀어 빌드하세요. 개발 검사를 `/tmp`·`/var` 계열에서 실행하면 macOS 경로 별칭/심볼릭 링크 때문에 제거 안전 검사가 일회용 테스트 데이터를 거부할 수 있습니다. 안전 검사를 완화하지 말고, 심볼릭 링크를 포함하지 않는 개발 폴더를 일회용 테스트 데이터 위치로 지정하세요. 지정 폴더의 `.build` 아래에 UUID 이름의 일회용 데이터만 만들고 정리합니다.
 
 ```bash
 UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash test-workflow.sh

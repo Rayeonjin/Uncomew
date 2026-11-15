@@ -1,14 +1,16 @@
 # Uncomew 🐾
 
-**Mac에 숨어 있는 큰 파일을 찾아보세요, Uncomew.**
+**어디에 공간이 쓰이고 있을까요? 언커뮤와 함께 살펴보세요.**
 
-저장 공간이 부족한데 어디부터 살펴봐야 할지 막막할 때, 큰 파일과 폴더를 찾고 용도를 확인하는 macOS 앱입니다. 이름은 **Uncover + Mew**, 한국어로는 **언커뮤**입니다.
+Mac의 저장 공간은 부족한데 무엇부터 정리해야 할지 막막할 때 쓰는 앱입니다. 큰 파일과 폴더를 찾고, 어떤 용도인지 확인한 뒤 필요한 것만 정리할 수 있도록 돕습니다.
+
+Uncomew는 **Uncover + Mew**를 합친 이름입니다. 한국어로는 **언커뮤**라고 부릅니다.
 
 **v0.2.0-alpha.1 · 초기 공개 테스트 버전** · [변경 이력](docs/CHANGELOG.md) · [설치 가이드](docs/BUILDING.md)
 
 소스를 받아 자신의 Mac에서 직접 빌드합니다. 아직 안정판은 아니며, 직접 빌드하고 문제를 제보할 수 있는 사용자를 대상으로 합니다.
 
-A small macOS storage inspector to help you find large files and review apps before cleaning up. Build from source. MIT licensed.
+macOS 13 이상에서 사용할 수 있으며, 소스를 받아 자신의 Mac에서 직접 빌드합니다. [MIT 라이선스](LICENSE)로 공개합니다.
 
 ## 할 수 있는 것
 
@@ -82,7 +84,7 @@ bash rollback.sh
 
 앱 버전만 되돌리며 사용자 파일·설정을 과거 시점으로 바꾸지는 않습니다. [업데이트·복구 안내](docs/BUILDING.md)
 
-## 알아두면 좋은 점
+## 지원 환경과 알아두면 좋은 점
 
 - **검증 환경:** Apple Silicon에서 로컬 빌드·일부 실제 화면·자동 검사를 확인했습니다. Intel 및 지원 대상 macOS 모든 버전에서 검증한 것은 아닙니다.
 - **공간 표시:** 디스크 점유량과 실제 확보 가능한 공간은 다를 수 있습니다. APFS 공유 블록·압축·온라인 전용 파일 등의 영향을 받습니다.
@@ -98,7 +100,7 @@ bash rollback.sh
 
 ## 문의와 버그 제보
 
-문의·버그 제보·사용성 피드백은 [Telegram · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. Catoshi와 같은 채널을 사용하므로 **Uncomew 관련 문의**라고 적어주시면 도움이 됩니다.
+문의·버그 제보·사용성 피드백은 [텔레그램 · Rayeonjin](https://t.me/Rayeonjin)으로 보내주세요. Catoshi와 같은 채널을 사용하므로 **Uncomew 관련 문의**라고 적어주시면 도움이 됩니다.
 
 앱 버전, macOS와 칩 종류, 막힌 단계와 오류 메시지를 함께 알려주시면 도움이 됩니다. 화면이나 로그를 올릴 때는 개인 경로와 파일명을 가려주세요. “다음에 무엇을 눌러야 할지 모르겠다” 같은 사용 경험도 환영합니다.
 
@@ -106,7 +108,7 @@ bash rollback.sh
 
 [MIT License](LICENSE). 사용·수정·재배포와 상업적 이용을 허용하며, 재배포할 때 저작권·라이선스 고지를 유지해야 합니다.
 
-Copyright (c) 2026 Rayeonjin and Uncomew contributors.
+저작권: 2026 Rayeonjin 및 Uncomew 기여자. 정식 저작권·이용 조건은 [LICENSE](LICENSE)에 있습니다.
 
 ## 문서
 
