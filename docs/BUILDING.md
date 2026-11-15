@@ -1,6 +1,6 @@
 # Uncomew 설치·업데이트·복구
 
-Uncomew는 소스를 내려받아 자신의 Mac에서 빌드하는 방식으로 배포할 예정입니다. 초기 공개 테스트 버전이며 안정판은 아닙니다. 아래 절차는 로컬 소스에서도 사용할 수 있습니다.
+언커뮤는 완성된 앱 대신 소스를 배포합니다. 아래 순서대로 따라 하면 자신의 Mac에서 빌드하고 설치할 수 있습니다. 터미널이 익숙하지 않아도 명령을 한 줄씩 실행하면 됩니다.
 
 ## 준비
 
@@ -41,7 +41,7 @@ pwd
 ls setup.sh
 ```
 
-폴더 경로와 `setup.sh`가 표시되면 설치할 위치로 제대로 이동한 것입니다.
+압축을 푼 폴더의 경로와 `setup.sh`가 나오면 준비됐습니다.
 
 ## 4. 빌드하고 설치하기
 
@@ -65,7 +65,7 @@ open "$HOME/Applications/Uncomew.app"
 
 개인정보 보호 영역을 읽지 못한 경우 **시스템 설정 → 개인정보 보호 및 보안 → 전체 디스크 접근 권한**에서 설치된 Uncomew를 추가하고 앱을 완전히 종료한 뒤 다시 실행할 수 있습니다. 권한을 줘도 일부 시스템 경로는 읽을 수 없으며, 업데이트 후 권한을 다시 확인해야 할 수 있습니다.
 
-일반 사용은 위 설치 경로의 앱으로 해주세요. 개발 폴더의 `dist/Uncomew.app`이나 과거 DiskScope 앱과 혼동하지 않도록 확인하세요. 기존 DiskScope 앱은 자동으로 지우거나 교체하지 않습니다.
+평소에는 `~/Applications/Uncomew.app`을 실행하세요. 개발 폴더의 `dist/Uncomew.app`은 별도 복사본입니다. 기존 DiskScope 앱은 자동으로 지우거나 교체하지 않습니다.
 
 ## 업데이트
 
@@ -94,7 +94,7 @@ open "$HOME/Applications/Uncomew.app"
 
 2026-11-12 Apple Silicon에서 새 임시 소스 폴더의 `bash build-app.sh`가 별도 SDK 지정 없이 성공했습니다. 다른 Mac 및 모든 macOS 버전을 검증한 결과는 아닙니다.
 
-Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`, `xcrun --show-sdk-path`, `xcode-select -p`로 현재 도구를 확인하세요. 설치된 macOS에 맞는 Apple 개발 도구로 업데이트하거나 설치 상태를 점검하세요. 과거 개발 환경에서는 개발 도구와 시스템 개발 키트(SDK)의 버전 불일치가 있었으므로 특정 SDK 경로를 모든 사용자에게 강제로 지정하지 않습니다.
+Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`, `xcrun --show-sdk-path`, `xcode-select -p`로 현재 도구를 확인하세요. 설치된 macOS에 맞는 Apple 개발 도구로 업데이트하거나 설치 상태를 점검하세요. 개발 중 도구와 SDK 버전이 맞지 않아 빌드가 실패한 적이 있습니다. 다른 사람의 SDK 경로를 그대로 복사하기보다 자신의 설치 상태를 먼저 확인해 주세요.
 
 ## 설치 중 오류
 
@@ -129,14 +129,14 @@ bash Tests/Installation/test_installation.sh
 
 설치 검사는 임시 폴더와 테스트용 앱 복사본만 사용합니다. 정상 설치·업데이트·복구, 교체 실패 복원, 잘못된 앱/서명/심볼릭 링크, 실행 중 앱 보호, 한글·공백 경로에서의 소스 빌드를 검사합니다. 설치 검사 실행 전 Uncomew를 종료하세요.
 
-개발/테스트 목적의 설치 위치 변경은 절대 경로로 지정할 수 있습니다. 복구할 때도 같은 값을 지정해야 합니다.
+개발 중 설치 위치를 바꾸려면 아래처럼 전체 경로를 지정하세요. 복구할 때도 같은 경로를 사용해야 합니다.
 
 ```bash
 UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash setup.sh
 UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash rollback.sh
 ```
 
-이 검증은 앱 번들 무결성과 설치 절차에 관한 것입니다. 실제 실제 화면 실행·전체 디스크 스캔 성공을 보장하는 검사는 아닙니다.
+이 검사는 앱 파일과 설치 절차를 확인합니다. 실제 화면 조작이나 전체 디스크 분석은 별도로 확인해야 합니다.
 
 ### 임시 경로에서 개발 테스트하기
 
