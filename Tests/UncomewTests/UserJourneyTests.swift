@@ -64,7 +64,10 @@ struct UserJourneyTests {
         }
         // Synthetic metadata only: no user files are read, created, moved or deleted by these scans.
         for round in 1...3 {
-            let analyzer = StorageAnalyzer(runScan: operation)
+            let suite = "Uncomew.journey." + UUID().uuidString
+            let defaults = UserDefaults(suiteName: suite)!
+            defer { defaults.removePersistentDomain(forName: suite) }
+            let analyzer = StorageAnalyzer(decisionDefaults: defaults, runScan: operation)
             analyzer.analyze(roots: [downloads])
             try await wait { !analyzer.isScanning && !analyzer.preparingCandidates }
             check(analyzer.candidates.count == 2 && analyzer.selectedCandidatePath == installer,
@@ -81,7 +84,18 @@ struct UserJourneyTests {
                   "Returning from storage preserves candidate context")
             check(analyzer.nodes == snapshot && analyzer.state == before && analyzer.browseSearch.isEmpty,
                   "Jump reveals the target without restarting the scan")
-            analyzer.keptCandidatePaths.insert(archive); analyzer.reconcileCandidateSelection()
+            let reviewCandidate = analyzer.candidates.first { $0.id == archive }!
+            analyzer.setDecision(.review, for: reviewCandidate)
+            check(analyzer.decision(for: reviewCandidate) == nil, "Review cannot bypass unanswered questions")
+            analyzer.setDecision(.review, for: reviewCandidate, confirmedQuestions: Set(reviewCandidate.questions.indices))
+            check(analyzer.decision(for: reviewCandidate) == .review, "Confirmed questions save review without deleting")
+            check(CandidateDecisionStore(defaults: defaults).decision(for: reviewCandidate.node) == .review,
+                  "Analyzer decision persists across reload")
+            analyzer.setDecision(.later, for: reviewCandidate)
+            analyzer.candidateDecisionFilter = CandidateDecision.later.rawValue
+            check(analyzer.visibleCandidates.map(\.id) == [archive], "Later decision can be revisited by filter")
+            analyzer.candidateDecisionFilter = "전체"
+            analyzer.setDecision(.keep, for: analyzer.candidates.first { $0.id == archive }!); analyzer.reconcileCandidateSelection()
             check(analyzer.visibleCandidates.isEmpty && analyzer.selectedCandidatePath == nil,
                   "Keeping the only filtered item produces a truthful empty result")
             analyzer.showKeptCandidates = true; analyzer.reconcileCandidateSelection()

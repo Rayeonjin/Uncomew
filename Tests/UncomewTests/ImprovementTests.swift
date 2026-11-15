@@ -23,6 +23,40 @@ actor ScanRecord {
             return node
         }
         func classify(_ node: StorageNode) -> CleanupCandidate? { CleanupAdvisor.candidate(for: node, home: home, now: now) }
+        let suite = "Uncomew.decisions." + UUID().uuidString
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = CandidateDecisionStore(defaults: defaults)
+        var original = node("Downloads/remember.dmg")
+        original.fileIdentity = "device:inode:birth:change"
+        store.save(.keep, for: original)
+        check(CandidateDecisionStore(defaults: defaults).decision(for: original) == .keep, "Keep survives store restart")
+        var changed = original
+        changed.fileIdentity = "different inode"
+        check(store.decision(for: changed) == nil, "Replacement at same path does not inherit decision")
+        changed = original; changed.allocatedBytes = 300_000_000
+        check(store.decision(for: changed) == nil, "Changed size requires review")
+        changed = original; changed.modifiedAt = now
+        check(store.decision(for: changed) == .keep, "Unchanged timestamp preserves note")
+        changed.modifiedAt = now.addingTimeInterval(1)
+        check(store.decision(for: changed) == nil, "Modified file requires review")
+        changed = original; changed.measurement = .partial
+        check(store.decision(for: changed) == nil, "Partial scan cannot reuse complete decision")
+        for decision in [CandidateDecision.later, .review] {
+            store.save(decision, for: original)
+            check(CandidateDecisionStore(defaults: defaults).decision(for: original) == decision, "Review state survives restart")
+        }
+        store.save(nil, for: original)
+        check(CandidateDecisionStore(defaults: defaults).decision(for: original) == nil, "Cleared note stays cleared")
+        defaults.set(Data("invalid".utf8), forKey: "Uncomew.candidateDecisions.v1")
+        check(CandidateDecisionStore(defaults: defaults).decision(for: original) == nil, "Corrupt notes never become decisions")
+        let smallInstaller = node("Downloads/small.dmg", bytes: 30_000_000)
+        let largePersonal = node("Downloads/family.zip", bytes: 8_000_000_000)
+        var incomplete = node("Downloads/incomplete.dmg", bytes: 9_000_000_000)
+        incomplete.measurement = .partial
+        let ordered = CleanupAdvisor.candidates(in: [largePersonal, incomplete, smallInstaller], home: home, now: now)
+        check(ordered.map(\.id) == [smallInstaller.path, largePersonal.path, incomplete.path], "Reviewability before size; incomplete last")
+        check(ordered.allSatisfy { !$0.questions.isEmpty && !$0.priorityReason.isEmpty }, "Every candidate explains priority and asks questions")
         check(classify(node("Downloads/setup.DMG"))?.category == .installers, "Installer extension is case insensitive")
         check(classify(node("Downloads/document.pdf", days: 91))?.category == .downloads, "Old downloaded document is review only")
         check(classify(node("Downloads/document.pdf", days: 89)) == nil, "Recent document not recommended")

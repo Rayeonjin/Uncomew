@@ -34,9 +34,22 @@ struct CleanupCandidatesView: View {
                     Text("전체").tag("전체")
                     ForEach(CleanupCandidate.Category.allCases, id: \.self) { Text($0.rawValue).tag($0.rawValue) }
                 }.frame(maxWidth: 300)
-                Toggle("이번 실행에서 보관한 항목 표시", isOn: $analyzer.showKeptCandidates).toggleStyle(.checkbox)
+                Toggle("보관한 항목도 보기", isOn: $analyzer.showKeptCandidates).toggleStyle(.checkbox)
                 Spacer()
-                Text("\(filtered.count)개 · 크기순").font(.caption)
+                Text("\(filtered.count)개 · 확인 우선순위").font(.caption)
+            }
+            HStack {
+                Picker("판단 기록", selection: $analyzer.candidateDecisionFilter) {
+                    Text("전체").tag("전체")
+                    Text("정리 검토").tag(CandidateDecision.review.rawValue)
+                    Text("나중에 검토").tag(CandidateDecision.later.rawValue)
+                }.frame(maxWidth: 300)
+                Text("설치 파일 → 빌드 데이터 → 앱 → 내용 확인이 필요한 항목. 같은 단계에서는 크기순입니다.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            if analyzer.resultsNeedRefresh {
+                Text("정리 후 결과가 바뀌었을 수 있습니다. 다시 분석한 뒤 판단을 기록하세요.")
+                    .foregroundStyle(.orange)
             }
             if analyzer.preparingCandidates { ProgressView("후보 분류 중…") }
             if filtered.isEmpty && !analyzer.preparingCandidates {
@@ -46,9 +59,9 @@ struct CleanupCandidatesView: View {
                     .foregroundStyle(.secondary).padding()
                 if !analyzer.isScanning && !analyzer.preparingCandidates && !analyzer.nodes.isEmpty {
                     HStack {
-                        if analyzer.candidateCategory != "전체" || !analyzer.keptCandidatePaths.isEmpty {
+                        if analyzer.candidateCategory != "전체" || analyzer.candidateDecisionFilter != "전체" || !analyzer.keptCandidatePaths.isEmpty {
                             Button("모든 분류·보관 항목 보기") {
-                                analyzer.candidateCategory = "전체"; analyzer.showKeptCandidates = true
+                                analyzer.candidateCategory = "전체"; analyzer.candidateDecisionFilter = "전체"; analyzer.showKeptCandidates = true
                             }
                         }
                         Button("현재 범위의 큰 파일 보기", action: openFiles)
@@ -65,8 +78,12 @@ struct CleanupCandidatesView: View {
                                 Spacer()
                                 Text(candidate.node.sizeText).monospacedDigit()
                             }
-                            Text(candidate.category.rawValue + (analyzer.keptCandidatePaths.contains(candidate.id) ? " · 보관" : ""))
+                            Text(candidate.category.rawValue + (analyzer.decision(for: candidate).map { " · " + $0.rawValue } ?? ""))
                                 .font(.caption).foregroundStyle(.secondary)
+                            Text(candidate.priorityReason).font(.caption).foregroundStyle(.secondary)
+                            if analyzer.hasChangedDecision(for: candidate) {
+                                Text("항목 변경됨 · 다시 판단").font(.caption).foregroundStyle(.orange)
+                            }
                         }.padding(.vertical, 4).tag(candidate.id).id(candidate.id)
                     }
                 }
@@ -97,11 +114,9 @@ struct CleanupCandidatesView: View {
                             } else {
                                 Button("Finder에서 검토") { analyzer.reveal(path: candidate.id) }
                             }
-                            Button(analyzer.keptCandidatePaths.contains(candidate.id) ? "보관 표시 해제" : "이번 실행에서는 보관") {
-                                if analyzer.keptCandidatePaths.contains(candidate.id) { analyzer.keptCandidatePaths.remove(candidate.id) }
-                                else { analyzer.keptCandidatePaths.insert(candidate.id) }
-                            }
-                            Text("보관 표시는 이 앱 실행 동안만 목록에서 숨깁니다. 파일은 변경하지 않습니다.").font(.caption).foregroundStyle(.secondary)
+                            CandidateDecisionPanel(candidate: candidate)
+                                .id(candidate.id + CandidateDecisionStore.fingerprint(candidate.node))
+
                         }.padding()
                     } else { Text("항목을 선택해 이유와 영향을 확인하세요.").foregroundStyle(.secondary).padding() }
                 }.frame(minWidth: 300, idealWidth: 380, maxWidth: 480)
@@ -118,5 +133,53 @@ private struct CandidateAppButton: View {
     let action: (URL) -> Void
     var body: some View {
         Button("앱 관리에서 검토") { action(url) }.disabled(uninstaller.busy)
+    }
+}
+
+private struct CandidateDecisionPanel: View {
+    @EnvironmentObject private var analyzer: StorageAnalyzer
+    let candidate: CleanupCandidate
+    @State private var answers = Set<Int>()
+    private var disabled: Bool {
+        analyzer.isScanning || analyzer.preparingCandidates || analyzer.resultsNeedRefresh
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Divider()
+            Text("정리를 검토하기 전에").font(.headline)
+            Text("답하기 어렵다면 보관하거나 나중에 검토하세요. 체크는 사용자의 확인 기록이며, 앱이 안전성을 검사한 결과가 아닙니다.")
+                .font(.caption).foregroundStyle(.secondary)
+            ForEach(Array(candidate.questions.enumerated()), id: \.offset) { index, question in
+                Toggle(question, isOn: Binding(
+                    get: { answers.contains(index) },
+                    set: { if $0 { answers.insert(index) } else { answers.remove(index) } }
+                )).toggleStyle(.checkbox).disabled(disabled)
+            }
+            if candidate.node.measurement != .complete {
+                Text("일부만 분석된 항목입니다. 다시 분석하기 전에는 정리 검토로 표시할 수 없습니다.")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+            if let decision = analyzer.decision(for: candidate) {
+                Text("저장한 판단: \(decision.rawValue)").font(.headline)
+            } else if analyzer.hasChangedDecision(for: candidate) {
+                Text("이전 기록 이후 항목 정보가 바뀌었습니다. 다시 확인해 주세요.")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+            HStack {
+                Button("계속 보관") { analyzer.setDecision(.keep, for: candidate) }
+                Button("나중에 검토") { analyzer.setDecision(.later, for: candidate) }
+            }.disabled(disabled)
+            Button("정리 검토에 담기") { analyzer.setDecision(.review, for: candidate, confirmedQuestions: answers) }
+                .disabled(disabled || answers.count != candidate.questions.count ||
+                          candidate.node.measurement != .complete)
+            if analyzer.decision(for: candidate) != nil || analyzer.hasChangedDecision(for: candidate) {
+                Button("판단 기록 지우기") {
+                    analyzer.setDecision(nil, for: candidate)
+                    answers.removeAll()
+                }.disabled(disabled)
+            }
+            Text("판단은 이 Mac에 저장됩니다. 파일을 이동하거나 삭제하지 않으며, 이후 삭제 확인을 대신하지 않습니다. 항목의 식별 정보·크기·수정 정보가 바뀌면 다시 판단합니다.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
     }
 }

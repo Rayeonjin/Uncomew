@@ -9,6 +9,7 @@ struct StorageNode: Identifiable, Hashable, Sendable {
     let parent: String?
     let type: EntryType
     let insidePackage: Bool
+    var fileIdentity: String?
     var modifiedAt: Date?
     var linkCount: UInt32 = 1
     var children: [String] = []
@@ -114,6 +115,7 @@ enum StorageScan {
             let type: StorageNode.EntryType = directory ? (package ? .package : .folder)
                 : (mode == mode_t(S_IFLNK) ? .symbolicLink : (mode == mode_t(S_IFREG) ? .file : .other))
             var node = StorageNode(path: path, parent: parent, type: type, insidePackage: insidePackage)
+            node.fileIdentity = "\(metadata.st_dev):\(metadata.st_ino):\(metadata.st_birthtimespec.tv_sec):\(metadata.st_birthtimespec.tv_nsec):\(metadata.st_ctimespec.tv_sec):\(metadata.st_ctimespec.tv_nsec)"
             node.modifiedAt = Date(timeIntervalSince1970: Double(metadata.st_mtimespec.tv_sec))
             node.linkCount = directory ? 1 : UInt32(metadata.st_nlink)
             if package && url.pathExtension.lowercased() == "app", let bundle = Bundle(url: url) {

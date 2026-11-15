@@ -5,9 +5,10 @@ import Foundation
 final class StorageAnalyzer: ObservableObject {
     typealias ScanOperation = @Sendable ([String], @escaping @Sendable (ScanBatch) async -> Void) async throws -> Void
     private let runScan: ScanOperation
-    init(runScan: @escaping ScanOperation = { roots, publish in
+    private let decisionStore: CandidateDecisionStore
+    init(decisionDefaults: UserDefaults = .standard, runScan: @escaping ScanOperation = { roots, publish in
         try await StorageScan.run(roots: roots, publish: publish)
-    }) { self.runScan = runScan }
+    }) { self.runScan = runScan; self.decisionStore = CandidateDecisionStore(defaults: decisionDefaults) }
     enum State: Equatable {
         case idle, scanning(String), finished(Date), cancelled, failed(String)
     }
@@ -41,7 +42,27 @@ final class StorageAnalyzer: ObservableObject {
     var hasCandidateScope: Bool { roots == candidateScanRoots && hasReusableResults }
     @Published private(set) var candidates: [CleanupCandidate] = []
     @Published private(set) var preparingCandidates = false
-    @Published var keptCandidatePaths = Set<String>()
+    @Published private(set) var decisionRevision = 0
+    @Published var candidateDecisionFilter = "전체"
+    var keptCandidatePaths: Set<String> {
+        Set(candidates.filter { decision(for: $0) == .keep }.map(\.id))
+    }
+    func decision(for candidate: CleanupCandidate) -> CandidateDecision? {
+        decisionStore.decision(for: candidate.node)
+    }
+    func hasChangedDecision(for candidate: CleanupCandidate) -> Bool {
+        decisionStore.records[candidate.id] != nil && decision(for: candidate) == nil
+    }
+    func setDecision(_ decision: CandidateDecision?, for candidate: CleanupCandidate, confirmedQuestions: Set<Int> = []) {
+        guard !isScanning, !preparingCandidates, !resultsNeedRefresh,
+              candidates.contains(where: { $0.id == candidate.id &&
+                  CandidateDecisionStore.fingerprint($0.node) == CandidateDecisionStore.fingerprint(candidate.node) }),
+              decision != .review || (candidate.node.measurement == .complete &&
+                  confirmedQuestions == Set(candidate.questions.indices)) else { return }
+        decisionStore.save(decision, for: candidate.node)
+        decisionRevision += 1
+        reconcileCandidateSelection()
+    }
     @Published var candidateCategory = "전체"
     @Published var selectedCandidatePath: String?
     @Published var showKeptCandidates = false
@@ -67,7 +88,15 @@ final class StorageAnalyzer: ObservableObject {
     var visibleCandidates: [CleanupCandidate] {
         candidates.filter {
             (candidateCategory == "전체" || $0.category.rawValue == candidateCategory) &&
-            (showKeptCandidates || !keptCandidatePaths.contains($0.id))
+            (showKeptCandidates || decision(for: $0) != .keep) &&
+            (candidateDecisionFilter == "전체" || decision(for: $0)?.rawValue == candidateDecisionFilter)
+        }.sorted {
+            let leftLater = decision(for: $0) == .later
+            let rightLater = decision(for: $1) == .later
+            if leftLater != rightLater { return !leftLater }
+            if $0.priority != $1.priority { return $0.priority < $1.priority }
+            return ($0.node.allocatedBytes ?? 0) == ($1.node.allocatedBytes ?? 0)
+                ? $0.id < $1.id : ($0.node.allocatedBytes ?? 0) > ($1.node.allocatedBytes ?? 0)
         }
     }
     func reconcileCandidateSelection() {
@@ -155,7 +184,7 @@ final class StorageAnalyzer: ObservableObject {
         roots = StorageScan.normalizedRoots(requested ?? defaultScanRoots)
         resultsNeedRefresh = false
         candidates = []; preparingCandidates = false
-        candidateCategory = "전체"; selectedCandidatePath = nil; showKeptCandidates = false
+        candidateDecisionFilter = "전체"; candidateCategory = "전체"; selectedCandidatePath = nil; showKeptCandidates = false
         clearBrowseFilters()
         nodes = [:]; issueCount = 0; visited = 0; selectedPath = nil; expanded = Set(roots)
         state = .scanning("준비 중")

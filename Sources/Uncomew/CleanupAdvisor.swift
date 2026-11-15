@@ -61,8 +61,92 @@ enum CleanupAdvisor {
             }
             return true
         }.sorted {
+            if $0.priority != $1.priority { return $0.priority < $1.priority }
             if $0.node.allocatedBytes != $1.node.allocatedBytes { return ($0.node.allocatedBytes ?? 0) > ($1.node.allocatedBytes ?? 0) }
             return $0.id < $1.id
+        }
+    }
+}
+
+// Decisions are local review notes, never authorization to delete.
+enum CandidateDecision: String, Codable, CaseIterable {
+    case keep = "계속 보관", later = "나중에 검토", review = "정리 검토"
+}
+
+struct CandidateDecisionRecord: Codable {
+    let decision: CandidateDecision
+    let fingerprint: String
+    let savedAt: Date
+}
+
+final class CandidateDecisionStore {
+    private let defaults: UserDefaults
+    private let key = "Uncomew.candidateDecisions.v1"
+    private(set) var records: [String: CandidateDecisionRecord]
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        records = defaults.data(forKey: key).flatMap {
+            try? JSONDecoder().decode([String: CandidateDecisionRecord].self, from: $0)
+        } ?? [:]
+    }
+    static func fingerprint(_ node: StorageNode) -> String {
+        // Snapshot evidence only: a changed identity, timestamp, size or completeness
+        // requires a new decision. Folder notes do not apply to individual children.
+        [node.fileIdentity ?? "unknown", node.type.rawValue,
+         node.modifiedAt.map { String($0.timeIntervalSince1970) } ?? "unknown",
+         node.allocatedBytes.map(String.init) ?? "unknown",
+         node.logicalBytes.map(String.init) ?? "unknown", node.measurement.rawValue,
+         String(node.linkCount)].joined(separator: "|")
+    }
+    func decision(for node: StorageNode) -> CandidateDecision? {
+        guard let record = records[node.path],
+              record.fingerprint == Self.fingerprint(node) else { return nil }
+        return record.decision
+    }
+    func save(_ decision: CandidateDecision?, for node: StorageNode) {
+        if let decision {
+            records[node.path] = CandidateDecisionRecord(decision: decision,
+                fingerprint: Self.fingerprint(node), savedAt: Date())
+        } else { records.removeValue(forKey: node.path) }
+        if let data = try? JSONEncoder().encode(records) { defaults.set(data, forKey: key) }
+    }
+}
+
+extension CleanupCandidate {
+    var priority: Int {
+        if node.measurement != .complete { return 4 }
+        switch category {
+        case .installers: return 0
+        case .builds: return 1
+        case .applications: return 2
+        case .archives, .downloads, .caches: return 3
+        }
+    }
+    var priorityReason: String {
+        if node.measurement != .complete { return "일부만 분석됨 · 먼저 다시 분석하세요" }
+        switch category {
+        case .installers: return "설치 완료 여부부터 확인"
+        case .builds: return "진행 중인 작업과 프로젝트 원본 확인"
+        case .applications: return "사용 여부와 앱 안의 자료 확인"
+        case .archives: return "유일한 원본·백업인지 확인"
+        case .downloads: return "오래된 파일 · 내용 확인 필요"
+        case .caches: return "소유 앱의 정리 기능부터 확인"
+        }
+    }
+    var questions: [String] {
+        switch category {
+        case .installers:
+            return ["이 파일로 필요한 설치를 마쳤나요?", "개인 자료가 든 이미지가 아니며, 필요하면 다시 구할 수 있나요?"]
+        case .builds:
+            return ["Xcode의 빌드·실행 작업을 모두 마쳤나요?", "이 폴더에 필요한 원본을 따로 넣어두지 않았는지 확인했나요?", "빌드 결과와 인덱스를 다시 만드는 시간을 감수할 수 있나요?"]
+        case .applications:
+            return ["당분간 이 앱을 쓰지 않아도 되나요?", "앱 본체 안의 필요한 자료를 별도로 보관했나요?", "다시 설치할 방법과 필요한 라이선스를 확보했나요?"]
+        case .archives:
+            return ["압축 파일 안의 내용을 확인했나요?", "필요한 내용이 다른 곳에 있으며, 유일한 원본이나 백업이 아닌가요?"]
+        case .downloads:
+            return ["파일 내용을 확인했고 더 이상 필요하지 않나요?", "필요한 원본이나 백업을 잃는 일이 없는지 확인했나요?"]
+        case .caches:
+            return ["어떤 앱이 사용하는 데이터인지 확인했나요?", "해당 앱의 캐시 정리 기능과 안내를 확인했나요?", "오프라인 자료가 사라지거나 다시 다운로드될 수 있음을 확인했나요?"]
         }
     }
 }
