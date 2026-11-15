@@ -1,13 +1,39 @@
 import Foundation
 
+// A one-shot, test-controlled boundary between the first and final scan batches.
+// Cancellation is checked by the synthetic scanner after the test releases it.
+// This deliberately does not depend on thread scheduling or a short sleep window.
+private actor ScanCheckpoint {
+    private var armed = false
+    private var continuation: CheckedContinuation<Void, Never>?
+    var isWaiting: Bool { continuation != nil }
+
+    func arm() {
+        precondition(!armed && continuation == nil)
+        armed = true
+    }
+
+    func waitIfArmed() async {
+        guard armed else { return }
+        armed = false
+        await withCheckedContinuation { continuation = $0 }
+    }
+
+    func release() {
+        guard let pending = continuation else { preconditionFailure("Scan has not reached checkpoint") }
+        continuation = nil
+        pending.resume()
+    }
+}
+
 @main
 struct UserJourneyTests {
     @MainActor static func main() async throws {
         var checks = 0
         func check(_ value: Bool, _ message: String) { precondition(value, message); checks += 1 }
-        func wait(_ condition: () -> Bool) async throws {
+        func wait(_ condition: () async -> Bool) async throws {
             for _ in 0..<500 {
-                if condition() { return }
+                if await condition() { return }
                 try await Task.sleep(nanoseconds: 10_000_000)
             }
             preconditionFailure("Journey did not finish")
@@ -16,6 +42,7 @@ struct UserJourneyTests {
         let downloads = home + "/Downloads"
         let installer = downloads + "/JourneyFixture.dmg"
         let archive = downloads + "/JourneyFixture.zip"
+        let checkpoint = ScanCheckpoint()
         let operation: StorageAnalyzer.ScanOperation = { roots, publish in
             let path = roots[0]
             if path == "/fixture/failure" { throw NSError(domain: "Journey", code: 1) }
@@ -26,7 +53,7 @@ struct UserJourneyTests {
                 return
             }
             await publish(ScanBatch(nodes: [root], currentPath: path, visited: 1))
-            try await Task.sleep(nanoseconds: 30_000_000)
+            await checkpoint.waitIfArmed()
             try Task.checkCancellation()
             var first = StorageNode(path: installer, parent: path, type: .file, insidePackage: false)
             first.allocatedBytes = 500_000_000; first.measurement = .complete
@@ -91,16 +118,29 @@ struct UserJourneyTests {
             check(!analyzer.hasBrowseFilters && analyzer.selectedPath == archive, "Explicit tree jump escapes restrictive filters")
             check(analyzer.keptCandidatePaths.contains(archive), "Storage exploration does not erase the user's keep decision")
 
+            await checkpoint.arm()
             analyzer.analyze(roots: [downloads])
-            try await wait { !analyzer.nodes.isEmpty }
+            try await wait { await checkpoint.isWaiting }
+            // Model a delayed test driver, longer than the old 30ms race window.
+            // The checkpoint, not this delay, guarantees the scan remains unfinished.
+            try await Task.sleep(nanoseconds: 150_000_000)
+            check(analyzer.isScanning && analyzer.nodes[downloads]?.measurement == .scanning,
+                  "Cancellation begins while the scan is definitely unfinished, even with a delayed driver")
             analyzer.cancel()
+            await checkpoint.release()
             try await wait { !analyzer.isScanning && !analyzer.preparingCandidates }
             check(analyzer.state == .cancelled && analyzer.nodes[downloads]?.measurement == .partial,
                   "Impatient user retains partial results after cancellation")
+            check(analyzer.nodes.count == 1 && analyzer.nodes[archive] == nil,
+                  "Cancellation keeps the first batch and never publishes the final batch")
             analyzer.reanalyze()
             try await wait { !analyzer.isScanning && !analyzer.preparingCandidates }
             check(analyzer.roots == [downloads] && analyzer.nodes[archive] != nil,
                   "Retry preserves the user's chosen scope")
+            let finishedState = analyzer.state
+            analyzer.cancel()
+            check(analyzer.state == finishedState && analyzer.nodes[downloads]?.measurement == .complete,
+                  "Cancelling after completion preserves the completed result")
 
             analyzer.analyze(roots: ["/fixture/unreadable"])
             try await wait { !analyzer.isScanning && !analyzer.preparingCandidates }
