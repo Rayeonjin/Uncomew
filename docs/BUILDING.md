@@ -84,7 +84,7 @@ bash setup.sh
 Uncomew를 종료하고 소스 폴더에서 실행합니다.
 
 ```bash
-bash rollback.sh
+bash scripts/rollback.sh
 open "$HOME/Applications/Uncomew.app"
 ```
 
@@ -111,19 +111,19 @@ Swift/SDK가 호환되지 않는다는 오류가 나면 `xcrun swift --version`,
 설치하지 않고 빌드하기:
 
 ```bash
-bash build-app.sh
+bash scripts/build-app.sh
 bash scripts/validate_app.sh dist/Uncomew.app
-bash run-app.sh
+bash scripts/run-app.sh
 ```
 
 테스트:
 
 ```bash
-bash test-core.sh
-bash test-workflow.sh
-bash test-flow.sh
-bash test-journeys.sh
-bash test-improvements.sh
+bash scripts/test-core.sh
+bash scripts/test-workflow.sh
+bash scripts/test-flow.sh
+bash scripts/test-journeys.sh
+bash scripts/test-improvements.sh
 bash Tests/Installation/test_installation.sh
 ```
 
@@ -133,7 +133,7 @@ bash Tests/Installation/test_installation.sh
 
 ```bash
 UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash setup.sh
-UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash rollback.sh
+UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash scripts/rollback.sh
 ```
 
 이 검사는 앱 파일과 설치 절차를 확인합니다. 실제 화면 조작이나 전체 디스크 분석은 별도로 확인해야 합니다.
@@ -143,9 +143,13 @@ UNCOMEW_APPLICATIONS_DIR="/absolute/path/Applications" bash rollback.sh
 일반 사용자는 Downloads 등 일반 폴더에 소스를 풀어 빌드하세요. 개발 검사를 `/tmp`·`/var` 계열에서 실행하면 macOS 경로 별칭/심볼릭 링크 때문에 제거 안전 검사가 일회용 테스트 데이터를 거부할 수 있습니다. 안전 검사를 완화하지 말고, 심볼릭 링크를 포함하지 않는 개발 폴더를 일회용 테스트 데이터 위치로 지정하세요. 지정 폴더의 `.build` 아래에 UUID 이름의 일회용 데이터만 만들고 정리합니다.
 
 ```bash
-UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash test-workflow.sh
-UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash test-flow.sh
-UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash test-improvements.sh
+UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash scripts/test-workflow.sh
+UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash scripts/test-flow.sh
+UNCOMEW_TEST_ROOT="$HOME/Projects/Uncomew" bash scripts/test-improvements.sh
 ```
 
 위 경로는 예시이며 실제 개발 폴더로 바꿔야 합니다. 앱 빌드·실행에 필요한 설정은 아닙니다.
+
+### 소스 폴더 구조 변경
+
+현재 main에서는 개발·복구 스크립트를 `scripts/`로 모았습니다. 기존 v0.2.0-alpha.1 릴리스 ZIP을 사용한다면 `build-app.sh`, `run-app.sh`, `rollback.sh`, `test-*.sh`는 `scripts/` 없이 실행하세요. 설치 명령 `bash setup.sh`는 동일합니다.

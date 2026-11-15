@@ -15,17 +15,17 @@
 
 ## 코드 수정 제안
 
-[설치 가이드](docs/BUILDING.md)를 따라 소스를 빌드한 뒤, 변경한 부분에 맞는 검사를 실행해 주세요. 수정 제안은 GitHub의 풀 리퀘스트(Pull Request)로 받습니다. 어떤 문제를 고쳤는지와 테스트한 환경을 적어주세요.
+[설치 가이드](../docs/BUILDING.md)를 따라 소스를 빌드한 뒤, 변경한 부분에 맞는 검사를 실행해 주세요. 수정 제안은 GitHub의 풀 리퀘스트(Pull Request)로 받습니다. 어떤 문제를 고쳤는지와 테스트한 환경을 적어주세요.
 
 ```bash
-bash test-core.sh
-bash test-workflow.sh
-bash test-flow.sh
-bash test-journeys.sh
-bash test-improvements.sh
+bash scripts/test-core.sh
+bash scripts/test-workflow.sh
+bash scripts/test-flow.sh
+bash scripts/test-journeys.sh
+bash scripts/test-improvements.sh
 ```
 
-위 검사는 사용자 파일을 휴지통으로 옮기지 않습니다. 실제 이동·복원 검사는 별도로 선택하는 `bash test-improvements.sh --trash`이며, 일회용 테스트 앱만 대상으로 합니다. [검사 범위와 알려진 한계](docs/TESTING.md)
+위 검사는 사용자 파일을 휴지통으로 옮기지 않습니다. 실제 이동·복원 검사는 별도로 선택하는 `bash scripts/test-improvements.sh --trash`이며, 일회용 테스트 앱만 대상으로 합니다. [검사 범위와 알려진 한계](../docs/TESTING.md)
 
 ## 코드를 고칠 때
 
@@ -35,4 +35,4 @@ bash test-improvements.sh
 - 파일 내용이나 개인 경로를 자동으로 외부에 보내지 않습니다.
 - 동작을 바꾸면 사용 안내와 알려진 한계도 함께 고칩니다.
 
-소스의 이용 조건은 [MIT 라이선스](LICENSE)를 확인해 주세요.
+소스의 이용 조건은 [MIT 라이선스](../LICENSE)를 확인해 주세요.

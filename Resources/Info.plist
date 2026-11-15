@@ -8,6 +8,8 @@
     <string>Uncomew</string>
     <key>CFBundleExecutable</key>
     <string>Uncomew</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon.icns</string>
     <key>CFBundleIdentifier</key>
     <string>io.github.rayeonjin.uncomew</string>
     <key>CFBundleInfoDictionaryVersion</key>

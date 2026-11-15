@@ -1,4 +1,6 @@
-# Uncomew 🐾
+# Uncomew
+
+<img src="Resources/AppIcon.png" width="128" alt="폴더 속 공간을 살펴보는 언커뮤 고양이">
 
 **Mac에서 큰 파일을 찾고, 정리할 것을 골라보세요.**
 
@@ -31,6 +33,8 @@ macOS 13 이상에서 소스를 받아 직접 빌드해 사용합니다. 아직 
 ### 1. 소스 받기
 
 [GitHub Releases](https://github.com/Rayeonjin/Uncomew/releases)에서 **v0.2.0-alpha.1**의 **Source code (zip)**을 받아 압축을 풉니다. `Code → Download ZIP`에는 개발 중인 변경이 들어갈 수 있으니 릴리스 ZIP을 권장합니다.
+
+새 아이콘과 정리된 폴더 구조는 현재 **main**에 있습니다. 이 변경을 사용하려면 `Code → Download ZIP`으로 받으세요.
 
 ### 2. 빌드 도구 확인하기
 
@@ -77,8 +81,10 @@ open "$HOME/Applications/Uncomew.app"
 새 버전에 문제가 생기면 Uncomew를 종료하고 소스 폴더에서 실행하세요.
 
 ```bash
-bash rollback.sh
+bash scripts/rollback.sh
 ```
+
+기존 v0.2.0-alpha.1 릴리스 ZIP에서는 `bash rollback.sh`를 사용합니다.
 
 앱 버전만 되돌리며 사용자 파일·설정을 과거 시점으로 바꾸지는 않습니다. [업데이트·복구 안내](docs/BUILDING.md)
 
@@ -114,4 +120,18 @@ bash rollback.sh
 - [변경 이력](docs/CHANGELOG.md)
 - [테스트와 알려진 한계](docs/TESTING.md)
 - [정리 후보와 복원](docs/REVIEW_CANDIDATES.md)
-- [기여 방법](CONTRIBUTING.md)
+- [기여 방법](.github/CONTRIBUTING.md)
+
+## 소스 구조
+
+최상위의 `setup.sh`로 설치할 수 있습니다. 개발용 파일은 아래 폴더에 모았습니다.
+
+| 폴더 | 내용 |
+| --- | --- |
+| `Sources/Uncomew` | 앱 코드 |
+| `Resources` | 앱 아이콘과 번들 정보 |
+| `scripts` | 빌드·실행·복구·검사 도구 |
+| `Tests` | 자동 검사 코드 |
+| `docs` | 설치 안내와 변경 이력 |
+
+개발 명령은 저장소 최상위에서 실행합니다. 예: `bash scripts/build-app.sh`.

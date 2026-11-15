@@ -12,11 +12,11 @@ jobs:
           sw_vers
           xcrun swift --version
       - name: Build and validate app
-        run: bash build-app.sh
+        run: bash scripts/build-app.sh
       - name: Read-only and fixture regression tests
         run: |
-          bash test-core.sh
-          bash test-workflow.sh
-          bash test-flow.sh
-          bash test-journeys.sh
-          bash test-improvements.sh
+          bash scripts/test-core.sh
+          bash scripts/test-workflow.sh
+          bash scripts/test-flow.sh
+          bash scripts/test-journeys.sh
+          bash scripts/test-improvements.sh

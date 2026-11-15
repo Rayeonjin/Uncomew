@@ -40,7 +40,7 @@ expect_version "$DEST/Uncomew.app" 1.0.0
 replace_uncomew_app "$FIXTURE/2.0.0.app" "$DEST" "$VALIDATOR"
 expect_version "$DEST/Uncomew.app" 2.0.0
 expect_version "$DEST/Uncomew.previous.app" 1.0.0
-UNCOMEW_APPLICATIONS_DIR="$DEST" bash "$ROOT/rollback.sh"
+UNCOMEW_APPLICATIONS_DIR="$DEST" bash "$ROOT/scripts/rollback.sh"
 expect_version "$DEST/Uncomew.app" 1.0.0
 expect_version "$DEST/Uncomew.previous.app" 2.0.0
 replace_uncomew_app "$FIXTURE/3.0.0.app" "$DEST" "$VALIDATOR"
@@ -102,6 +102,8 @@ expect_version "$DEST/Uncomew.previous.app" 1.0.0
 # Refuse replacement of a running process without killing it. This is a disposable
 # sleep executable named Uncomew, never an installed user app.
 cp /bin/sleep "$FIXTURE/Uncomew"
+# Re-sign the copied system binary for its disposable location.
+/usr/bin/codesign --force --sign - "$FIXTURE/Uncomew" >/dev/null 2>&1
 "$FIXTURE/Uncomew" 60 &
 RUNNING_PID=$!
 expect_failure "$FIXTURE/2.0.0.app" "$DEST" "$VALIDATOR"
@@ -125,7 +127,7 @@ expect_failure "$FIXTURE/2.0.0.app" "$FIRST" "$FIXTURE/first-validator.sh"
 # executable script permissions or pre-existing build output.
 SOURCE="$FIXTURE/소스 ZIP space"
 mkdir -p "$SOURCE"
-for item in Package.swift Sources Resources scripts build-app.sh setup.sh rollback.sh; do
+for item in Package.swift Sources Resources scripts setup.sh; do
   /usr/bin/ditto "$ROOT/$item" "$SOURCE/$item"
 done
 find "$SOURCE" -name '*.sh' -exec chmod -x {} +

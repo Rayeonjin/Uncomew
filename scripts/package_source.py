@@ -8,9 +8,9 @@ import zipfile
 ROOT = Path(__file__).resolve().parent.parent
 TAG = 'v0.2.0-alpha.1'
 DIRECTORIES = ('Sources', 'Resources', 'Tests', 'scripts', '.github')
-FILES = ('.gitignore', 'Package.swift', 'README.md', 'LICENSE', 'CONTRIBUTING.md',
-         'docs/BUILDING.md', 'docs/TESTING.md', 'docs/CHANGELOG.md', 'docs/REVIEW_CANDIDATES.md', 'build-app.sh', 'run-app.sh', 'setup.sh', 'rollback.sh')
-EXTENSIONS = {'.swift', '.plist', '.sh', '.py', '.md', '.yml', '.yaml'}
+FILES = ('.gitignore', 'Package.swift', 'README.md', 'LICENSE',
+         'docs/BUILDING.md', 'docs/TESTING.md', 'docs/CHANGELOG.md', 'docs/REVIEW_CANDIDATES.md', 'setup.sh')
+EXTENSIONS = {'.swift', '.plist', '.sh', '.py', '.md', '.yml', '.yaml', '.png', '.icns'}
 
 
 def main():
@@ -18,7 +18,6 @@ def main():
     if not TAG.startswith('v' + version + '-'):
         raise SystemExit('Release tag and app version disagree.')
     paths = [ROOT / name for name in FILES]
-    paths.extend(ROOT.glob('test-*.sh'))
     for directory in DIRECTORIES:
         base = ROOT / directory
         if base.is_symlink() or not base.is_dir():

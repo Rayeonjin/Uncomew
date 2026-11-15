@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")" && pwd)"
-[ "$#" -eq 0 ] || { echo 'Usage: bash rollback.sh' >&2; exit 2; }
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+[ "$#" -eq 0 ] || { echo 'Usage: bash scripts/rollback.sh' >&2; exit 2; }
 [ "$(id -u)" -ne 0 ] || { echo 'Run rollback as your normal user, without sudo.' >&2; exit 1; }
 DEST_DIR="${UNCOMEW_APPLICATIONS_DIR:-$HOME/Applications}"
 [ -d "$DEST_DIR/Uncomew.previous.app" ] || {

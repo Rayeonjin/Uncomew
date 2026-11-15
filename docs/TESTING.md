@@ -19,11 +19,11 @@
 ## 직접 검사하기
 
 ```bash
-bash test-core.sh
-bash test-workflow.sh
-bash test-flow.sh
-bash test-journeys.sh
-bash test-improvements.sh
+bash scripts/test-core.sh
+bash scripts/test-workflow.sh
+bash scripts/test-flow.sh
+bash scripts/test-journeys.sh
+bash scripts/test-improvements.sh
 ```
 
 일반 검사는 사용자 파일을 휴지통으로 옮기지 않습니다. `test-journeys.sh`는 합성 메타데이터로 주요 여정을 세 번 반복합니다. 임시 경로에서 안전 검사를 실행하는 방법은 [빌드 안내](BUILDING.md#임시-경로에서-개발-테스트하기)를 참고하세요.
@@ -34,8 +34,8 @@ GitHub Actions는 빌드와 위 검사를 실행합니다. 결과는 저장소�
 
 ```bash
 bash Tests/Installation/test_installation.sh
-bash test-improvements.sh --benchmark
-bash test-improvements.sh --trash
+bash scripts/test-improvements.sh --benchmark
+bash scripts/test-improvements.sh --trash
 ```
 
 설치 검사는 Uncomew를 종료한 뒤 실행하세요. `--trash`는 일회용 테스트 앱을 실제 휴지통으로 이동·복원합니다. 일반 자동 검사에서는 실행하지 않습니다.
