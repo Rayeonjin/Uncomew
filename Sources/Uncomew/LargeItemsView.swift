@@ -23,7 +23,7 @@ struct LargeItemsView: View {
     }
 
     var body: some View {
-        let displayedRows = rows
+        let displayedRows = analyzer.mode == .map ? [] : rows
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("저장 공간").font(.largeTitle.bold())
@@ -34,6 +34,9 @@ struct LargeItemsView: View {
             Picker("보기", selection: $analyzer.mode) {
                 ForEach(StorageAnalyzer.BrowseMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }.pickerStyle(.segmented)
+            if analyzer.mode == .map {
+                SpaceMapView(openApplication: openApplication)
+            } else {
             HStack {
                 Toggle("이름순", isOn: $analyzer.browseSortByName)
                 Toggle("앱·보관함 내부 포함", isOn: $analyzer.browseIncludePackages)
@@ -136,6 +139,7 @@ struct LargeItemsView: View {
                             .foregroundStyle(.secondary).padding()
                     }
                 }.frame(minWidth: 250, idealWidth: 320, maxWidth: 400)
+            }
             }
         }.padding(20)
     }

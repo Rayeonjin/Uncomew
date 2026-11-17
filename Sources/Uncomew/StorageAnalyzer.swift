@@ -12,7 +12,7 @@ final class StorageAnalyzer: ObservableObject {
     enum State: Equatable {
         case idle, scanning(String), finished(Date), cancelled, failed(String)
     }
-    enum BrowseMode: String, CaseIterable { case tree = "폴더 트리", folders = "큰 폴더", files = "큰 파일" }
+    enum BrowseMode: String, CaseIterable { case map = "공간 지도", tree = "폴더 트리", folders = "큰 폴더", files = "큰 파일" }
     @Published private(set) var state: State = .idle
     @Published private(set) var summary = DiskSummary()
     @Published private(set) var capacityLoaded = false
@@ -116,7 +116,7 @@ final class StorageAnalyzer: ObservableObject {
         selectedPath = nil
         mode = target
     }
-    @Published var mode: BrowseMode = .tree {
+    @Published var mode: BrowseMode = .map {
         didSet { if mode == .folders { browseFileKind = .all } }
     }
     @Published var selectedPath: String?

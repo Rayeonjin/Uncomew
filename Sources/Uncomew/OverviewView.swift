@@ -15,10 +15,8 @@ struct OverviewView: View {
                 Text("큰 항목의 용도를 확인하고, 필요한 것만 정리하세요.").foregroundStyle(.secondary)
                 Text("무엇부터 확인할까요?").font(.title2.bold())
                 HStack(alignment: .top, spacing: 12) {
-                    entry("정리할 곳 찾기", "다운로드·앱·캐시에서 먼저 검토할 항목을 찾습니다.", icon: "checklist", disabled: analyzer.isScanning, action: openCandidates)
-                    entry("전체 사용량 보기", "큰 폴더와 파일부터 저장 공간을 살펴봅니다.", icon: "internaldrive", disabled: analyzer.isScanning) {
-                        openStorage(.folders)
-                    }
+                    entry("공간 지도로 살펴보기", "큰 블록부터 폴더 안을 살펴보고 공간이 쓰인 곳을 찾습니다.", icon: "square.grid.2x2", disabled: analyzer.isScanning) { openStorage(.map) }
+                    entry("정리 후보와 판단 기록", "확인 질문과 보관·검토 기록을 봅니다.", icon: "checklist", disabled: analyzer.isScanning, action: openCandidates)
                     entry("폴더 직접 선택", "이미 의심되는 폴더만 분석합니다.", icon: "folder", disabled: analyzer.isScanning, action: chooseFolder)
                 }
                 Text("분석은 파일의 크기·위치 정보를 읽으며, 선택만으로 파일을 지우지 않습니다.")

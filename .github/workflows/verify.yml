@@ -15,6 +15,7 @@ jobs:
         run: bash scripts/build-app.sh
       - name: Read-only and fixture regression tests
         run: |
+          bash scripts/test-map.sh
           bash scripts/test-core.sh
           bash scripts/test-workflow.sh
           bash scripts/test-flow.sh

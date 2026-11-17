@@ -45,7 +45,7 @@ struct ContentView: View {
                                     selection = .candidates
                                  },
                                  chooseFolder: {
-                                    if analyzer.chooseFolder() { cameFromCandidates = false; analyzer.mode = .tree; selection = .storage }
+                                    if analyzer.chooseFolder() { cameFromCandidates = false; analyzer.mode = .map; selection = .storage }
                                  })
                 case .candidates:
                     CleanupCandidatesView(openStorage: { node in
