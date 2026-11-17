@@ -136,7 +136,7 @@ private struct CandidateAppButton: View {
     }
 }
 
-private struct CandidateDecisionPanel: View {
+struct CandidateDecisionPanel: View {
     @EnvironmentObject private var analyzer: StorageAnalyzer
     let candidate: CleanupCandidate
     @State private var answers = Set<Int>()

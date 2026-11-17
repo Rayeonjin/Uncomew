@@ -7,6 +7,7 @@ struct ContentView: View {
     private let capacityRefresh = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
     @State private var selection: SidebarItem? = .overview
     @State private var cameFromCandidates = false
+    @State private var cameFromMap = false
     enum SidebarItem: String, CaseIterable, Identifiable {
         case overview = "요약", candidates = "정리 후보", storage = "저장 공간", applications = "앱 관리"
         var id: String { rawValue }
@@ -39,7 +40,7 @@ struct ContentView: View {
                                     else { analyzer.showCurrentRanking(mode) }
                                     selection = .storage
                                  },
-                                 openApplications: { selection = .applications },
+                                 openApplications: { cameFromMap = false; selection = .applications },
                                  openCandidates: {
                                     if !analyzer.hasCandidateScope && !analyzer.isScanning { analyzer.analyzeCandidates() }
                                     selection = .candidates
@@ -53,19 +54,25 @@ struct ContentView: View {
                                           },
                                           openApplication: { url in
                         guard !uninstaller.busy else { return }
-                        uninstaller.scan(url); selection = .applications
+                        cameFromMap = false; uninstaller.scan(url); selection = .applications
                     }, openFiles: {
                         analyzer.showCurrentRanking(.files); cameFromCandidates = true; selection = .storage
                     })
                 case .storage: LargeItemsView(returnToCandidates: cameFromCandidates ? { selection = .candidates } : nil,
                                                openApplication: { url in
                     guard !uninstaller.busy else { return }
+                    cameFromMap = analyzer.mode == .map
                     uninstaller.scan(url)
                     selection = .applications
                 })
                 case .applications: UninstallerView(openOverview: { analyzer.refreshCapacity(); selection = .overview })
                 }
             }.toolbar {
+                if selection == .applications && cameFromMap {
+                    ToolbarItem {
+                        Button("공간 지도로 돌아가기") { analyzer.mode = .map; selection = .storage; cameFromMap = false }
+                    }
+                }
                 if selection == .storage {
                     ToolbarItem {
                         Button(analyzer.roots.isEmpty ? "공간 사용 확인" : "이 범위 다시 분석") { analyzer.reanalyze() }.disabled(analyzer.isScanning)

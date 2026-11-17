@@ -66,6 +66,32 @@ final class StorageAnalyzer: ObservableObject {
     @Published var candidateCategory = "전체"
     @Published var selectedCandidatePath: String?
     @Published var showKeptCandidates = false
+    @Published var mapFolder: String?
+    @Published var mapSelectedPath: String?
+    func enterMapFolder(_ node: StorageNode) {
+        guard node.type == .folder else { return }
+        mapFolder = node.path; mapSelectedPath = nil
+    }
+    func mapGoUp() {
+        guard let path = mapFolder else { return }
+        mapFolder = nodes[path]?.parent
+        mapSelectedPath = path
+    }
+    func refreshMapFolder() {
+        guard !isScanning else { return }
+        guard let path = mapFolder else { reanalyze(); return }
+        analyze(roots: [path])
+        mapFolder = path
+    }
+    private func reconcileMapLocation() {
+        while let path = mapFolder, nodes[path]?.type != .folder {
+            let parent = URL(fileURLWithPath: path).deletingLastPathComponent().path
+            if parent == path || !roots.contains(where: { parent == $0 || parent.hasPrefix($0 + "/") }) {
+                mapFolder = nil
+            } else { mapFolder = parent }
+        }
+        if let path = mapSelectedPath, nodes[path] == nil { mapSelectedPath = nil }
+    }
     @Published var browseSearch = ""
     @Published var browseFileKind: BrowseFileKind = .all
     @Published var browseMinimumSize: BrowseMinimumSize = .all
@@ -181,7 +207,9 @@ final class StorageAnalyzer: ObservableObject {
 
     func analyze(roots requested: [String]? = nil) {
         guard !isScanning else { return }
-        roots = StorageScan.normalizedRoots(requested ?? defaultScanRoots)
+        let nextRoots = StorageScan.normalizedRoots(requested ?? defaultScanRoots)
+        if nextRoots != roots { mapFolder = nil; mapSelectedPath = nil }
+        roots = nextRoots
         resultsNeedRefresh = false
         candidates = []; preparingCandidates = false
         candidateDecisionFilter = "전체"; candidateCategory = "전체"; selectedCandidatePath = nil; showKeptCandidates = false
@@ -231,6 +259,7 @@ final class StorageAnalyzer: ObservableObject {
         if didChange { nodes = completed }
         state = cancelled ? .cancelled : .finished(Date())
         scanTask = nil
+        reconcileMapLocation()
         refreshCapacity()
         preparingCandidates = true
         let snapshot = Array(nodes.values)
@@ -248,6 +277,7 @@ final class StorageAnalyzer: ObservableObject {
     private func fail(_ message: String, runID: UUID) {
         guard runID == generation else { return }
         state = .failed(message); scanTask = nil
+        reconcileMapLocation()
     }
     func cancel() { scanTask?.cancel() }
     @discardableResult func chooseFolder() -> Bool {
@@ -274,6 +304,7 @@ final class StorageAnalyzer: ObservableObject {
     }
     func reveal(path: String) {
         guard !ItemKnowledge.isSystemManaged(path) else { return }
+        markResultsForReview()
         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: path)])
     }
     func reveal(_ item: StorageItem) { if item.canRevealInFinder { reveal(path: item.path) } }

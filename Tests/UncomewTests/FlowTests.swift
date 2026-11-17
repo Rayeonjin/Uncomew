@@ -95,6 +95,30 @@ struct FlowTests {
         analyzer.analyze(roots: [root.path])
         try await waitUntil { !analyzer.isScanning }
         check(analyzer.nodes[first.standardizedFileURL.path]?.type == .package, "Storage discovers the app for handoff")
+        let mapRoot = analyzer.nodes[root.path]!
+        analyzer.enterMapFolder(mapRoot)
+        analyzer.mapSelectedPath = first.path
+        analyzer.mode = .files
+        analyzer.mode = .map
+        check(analyzer.mapFolder == root.path && analyzer.mapSelectedPath == first.path,
+              "Switching views preserves map location and selection")
+        analyzer.enterMapFolder(analyzer.nodes[first.path]!)
+        check(analyzer.mapFolder == root.path, "Map cannot enter application package")
+        analyzer.mapGoUp()
+        check(analyzer.mapFolder == nil && analyzer.mapSelectedPath == root.path, "Going up selects previous folder")
+        analyzer.enterMapFolder(mapRoot)
+        analyzer.reanalyze()
+        check(analyzer.mapFolder == root.path, "Same-scope refresh retains map folder while scanning")
+        try await waitUntil { !analyzer.isScanning && !analyzer.preparingCandidates }
+        check(analyzer.mapFolder == root.path, "Map location survives refreshed results")
+        analyzer.refreshMapFolder()
+        try await waitUntil { !analyzer.isScanning && !analyzer.preparingCandidates }
+        check(analyzer.roots == [root.path] && analyzer.mapFolder == root.path, "Folder refresh stays inside refreshed folder")
+        analyzer.mapFolder = root.appendingPathComponent("missing").path
+        analyzer.reanalyze()
+        try await waitUntil { !analyzer.isScanning && !analyzer.preparingCandidates }
+        check(analyzer.mapFolder == root.path, "Missing folder falls back to an existing ancestor")
+
         analyzer.markResultsForReview()
         check(analyzer.resultsNeedRefresh, "External changes mark result snapshot")
         analyzer.reanalyze()

@@ -3,11 +3,12 @@ import SwiftUI
 struct SpaceMapView: View {
     @EnvironmentObject private var analyzer: StorageAnalyzer
     let openApplication: (URL) -> Void
-    @State private var folder: String?
+    @EnvironmentObject private var uninstaller: AppUninstaller
+    private var folder: String? { analyzer.mapFolder }
     @State private var listLimit = 100
     private var current: StorageNode? { folder.flatMap { analyzer.nodes[$0] } }
     private var children: [StorageNode] {
-        let paths = current?.children ?? analyzer.roots
+        let paths = folder == nil ? analyzer.roots : (current?.children ?? [])
         return paths.compactMap { analyzer.nodes[$0] }.sorted {
             if $0.allocatedBytes != $1.allocatedBytes { return ($0.allocatedBytes ?? 0) > ($1.allocatedBytes ?? 0) }
             return $0.path < $1.path
@@ -25,7 +26,7 @@ struct SpaceMapView: View {
     }
     private func enter(_ node: StorageNode) {
         guard node.type == .folder else { return }
-        folder = node.path; analyzer.selectedPath = nil; listLimit = 100
+        analyzer.enterMapFolder(node); listLimit = 100
     }
     private func color(_ node: StorageNode) -> Color {
         if ItemKnowledge.isSystemManaged(node.path) { return .gray }
@@ -41,11 +42,13 @@ struct SpaceMapView: View {
         let unassigned = current.map { max(0, Double($0.allocatedBytes ?? 0) - measured) } ?? 0
         let weights = visible.map { Double($0.allocatedBytes ?? 0) } + [remainder, unassigned]
         let total = weights.reduce(0, +)
-        let selected = children.first { $0.path == analyzer.selectedPath }
+        let selected = children.first { $0.path == analyzer.mapSelectedPath }
         return VStack(alignment: .leading, spacing: 10) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
-                    Button("분석 범위") { folder = nil; analyzer.selectedPath = nil; listLimit = 100 }
+                    Button("상위 폴더") { analyzer.mapGoUp(); listLimit = 100 }
+                        .disabled(folder == nil)
+                    Button("분석 범위") { analyzer.mapFolder = nil; analyzer.mapSelectedPath = nil; listLimit = 100 }
                     ForEach(trail) { node in
                         Image(systemName: "chevron.right").font(.caption)
                         Button(node.name) { enter(node) }.disabled(node.path == folder)
@@ -61,8 +64,14 @@ struct SpaceMapView: View {
                 Text("미확인·부분 분석 항목이 있습니다. 지도는 확인한 크기만 표현하며, 빈 공간이나 삭제 가능량을 뜻하지 않습니다.")
                     .font(.caption).foregroundStyle(.orange)
             }
-            if analyzer.resultsNeedRefresh {
-                Text("정리 후 결과가 달라졌을 수 있습니다. ‘이 범위 다시 분석’으로 갱신하세요.").foregroundStyle(.orange)
+            HStack {
+                Button(folder == nil ? "정리 후 다시 확인" : "이 폴더만 다시 확인") {
+                    analyzer.refreshMapFolder()
+                }.disabled(analyzer.isScanning)
+                if analyzer.resultsNeedRefresh {
+                    Text("Finder에서 변경했다면 다시 확인하세요. 표시된 크기는 이전 분석 결과입니다.")
+                        .font(.caption).foregroundStyle(.orange)
+                }
             }
             HSplitView {
                 VStack(alignment: .leading, spacing: 8) {
@@ -78,9 +87,9 @@ struct SpaceMapView: View {
                                 SpaceMapTile(label: label,
                                              sizeText: node?.sizeText ?? ByteCountFormatter.string(fromByteCount: Int64(weights[tile.id]), countStyle: .file),
                                              color: node.map { color($0) } ?? Color.gray,
-                                             selected: node != nil && node?.path == analyzer.selectedPath,
+                                             selected: node != nil && node?.path == analyzer.mapSelectedPath,
                                              rect: tile.rect,
-                                             select: { analyzer.selectedPath = node?.path },
+                                             select: { analyzer.mapSelectedPath = node?.path },
                                              enter: { if let node { enter(node) } })
 
                             }
@@ -88,13 +97,17 @@ struct SpaceMapView: View {
                     }.frame(minHeight: 120, maxHeight: .infinity)
                     Text("현재 위치 \(children.count)개 · 작은 항목과 크기 미확인 항목도 목록에서 선택할 수 있습니다.")
                         .font(.caption).foregroundStyle(.secondary)
-                    List(selection: $analyzer.selectedPath) {
+                    List(selection: $analyzer.mapSelectedPath) {
                         ForEach(Array(children.prefix(listLimit))) { node in
                             HStack {
                                 Image(systemName: node.isFolder ? "folder" : "doc").foregroundStyle(color(node))
                                 Text(node.name).lineLimit(1)
                                 Spacer()
                                 Text(node.sizeText).monospacedDigit()
+                                if node.type == .folder {
+                                    Button { enter(node) } label: { Image(systemName: "chevron.right") }
+                                        .buttonStyle(.borderless).help("폴더 안으로")
+                                }
                             }.tag(node.path)
                         }
                         if children.count > listLimit {
@@ -118,6 +131,16 @@ struct SpaceMapView: View {
                             }
                             Button("Finder에서 내용 확인") { analyzer.reveal(path: node.path) }
                                 .disabled(ItemKnowledge.isSystemManaged(node.path))
+                            if node.type == .package && URL(fileURLWithPath: node.path).pathExtension.lowercased() == "app" {
+                                Button("앱 관리에서 검토") { openApplication(URL(fileURLWithPath: node.path)) }
+                                    .disabled(uninstaller.busy)
+                            }
+                            if let candidate = analyzer.candidates.first(where: { $0.id == node.path }) {
+                                DisclosureGroup("보관·정리 판단 기록") {
+                                    CandidateDecisionPanel(candidate: candidate)
+                                        .id(candidate.id + CandidateDecisionStore.fingerprint(candidate.node))
+                                }
+                            }
                             if node.type == .package {
                                 Text("앱·보관함은 하나의 묶음으로 표시합니다. 내부 파일을 따로 삭제하지 마세요.")
                                     .font(.caption).foregroundStyle(.secondary)
@@ -135,8 +158,8 @@ struct SpaceMapView: View {
                 }.frame(minWidth: 240, idealWidth: 280, maxWidth: 350)
             }
         }
-        .onChange(of: analyzer.roots) { _ in folder = nil; analyzer.selectedPath = nil }
-        .onChange(of: analyzer.nodes.isEmpty) { empty in if empty { folder = nil; listLimit = 100 } }
+        .onChange(of: analyzer.mapFolder) { _ in listLimit = 100 }
+        .onChange(of: analyzer.nodes.isEmpty) { empty in if empty { listLimit = 100 } }
     }
 }
 
