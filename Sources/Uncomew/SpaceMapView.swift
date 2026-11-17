@@ -85,7 +85,7 @@ struct SpaceMapView: View {
 
                             }
                         }
-                    }.frame(minHeight: 220)
+                    }.frame(minHeight: 120, maxHeight: .infinity)
                     Text("현재 위치 \(children.count)개 · 작은 항목과 크기 미확인 항목도 목록에서 선택할 수 있습니다.")
                         .font(.caption).foregroundStyle(.secondary)
                     List(selection: $analyzer.selectedPath) {
@@ -100,7 +100,7 @@ struct SpaceMapView: View {
                         if children.count > listLimit {
                             Button("항목 더 보기") { listLimit += 100 }
                         }
-                    }.frame(minHeight: 100, idealHeight: 160, maxHeight: 200)
+                    }.frame(height: 120)
                 }.frame(minWidth: 310)
                 ScrollView {
                     if let node = selected {
